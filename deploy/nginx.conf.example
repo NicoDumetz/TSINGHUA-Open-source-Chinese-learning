@@ -1,0 +1,32 @@
+# Replace learn.example.com and merge with your existing TLS configuration.
+# This file is an example: the workflow never overwrites the VPS nginx config.
+server {
+    listen 80;
+    server_name learn.example.com;
+    root /var/www/TSINGHUA-Open-source-Chinese-learning;
+    index index.html;
+    include /etc/nginx/mime.types;
+
+    location = /index.html {
+        add_header Cache-Control "no-cache" always;
+    }
+    location /assets/ {
+        try_files $uri =404;
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+    location /audio/ {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache";
+    }
+    location /strokes/ {
+        try_files $uri =404;
+        add_header Cache-Control "no-cache";
+    }
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    location ~ /\. {
+        deny all;
+    }
+}

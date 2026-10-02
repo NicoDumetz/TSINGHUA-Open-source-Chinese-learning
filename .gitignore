@@ -1,0 +1,51 @@
+# Dependencies and generated builds
+node_modules/
+dist/
+.vite/
+.cache/
+*.tsbuildinfo
+
+# Test reports and coverage
+test-results/
+playwright-report/
+playwright/.cache/
+coverage/
+blob-report/
+
+# Local configuration and credentials (keep safe examples)
+.env
+.env.*
+!.env.example
+!.env.*.example
+.aws/
+.ssh/
+*.pem
+*.key
+
+# Local tools and deployment state
+.codex/
+.agents/
+.vercel/
+.netlify/
+.wrangler/
+
+# Python audio-generation environment and partial downloads
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.part
+
+# Logs and editor/OS files
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.example.json
+*.swp
+*.swo
+*~
+
+# Keep package-lock.json, public/audio/, public/strokes/ and licenses tracked.

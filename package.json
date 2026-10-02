@@ -1,0 +1,25 @@
+{
+  "name": "hanzi-fr",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "playwright test",
+    "test:production": "npm run build && node scripts/test-production.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "hanzi-writer-data": "^2.0.1",
+    "typescript": "^5.7.3",
+    "vite": "^6.1.0"
+  },
+  "dependencies": {
+    "hanzi-writer": "^3.7.3"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  }
+}
