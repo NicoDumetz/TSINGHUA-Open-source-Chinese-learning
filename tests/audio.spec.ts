@@ -83,7 +83,8 @@ test("lecture réelle du MP3 dans Chrome : test du son, oral, ralenti et cours s
   });
   await page.locator('[data-answer="你好"]').click();
   await expect(page.locator(".feedback")).toContainText("bonjour");
-  await page.getByRole("button", { name: "Leçon 1", exact: true }).click();
+  await page.getByRole("button", { name: "Leçons", exact: true }).click();
+  await page.locator('[data-open-lesson="lesson-1"]').click();
   await page.getByRole("button", { name: "Ouvrir la fiche de 不客气" }).click();
   const word = page.waitForResponse((r) =>
     r.url().endsWith(audioFiles["不客气"]),

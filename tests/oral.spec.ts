@@ -3,6 +3,11 @@ import { allVocabulary as vocabulary } from "../src/lessons";
 
 import { mockLessonAudio } from "./audio-helper";
 
+async function openLesson1(page: Page) {
+  await page.getByRole("button", { name: "Leçons", exact: true }).click();
+  await page.locator('[data-open-lesson="lesson-1"]').click();
+}
+
 test("oral : écoute, quatre choix sans homophones, réécoute, correction et score", async ({
   page,
 }) => {
@@ -62,8 +67,9 @@ test("oral : écoute, quatre choix sans homophones, réécoute, correction et sc
     ),
   ).toEqual({ mode: "oral", correct: 10, total: 10 });
   await page.reload();
+  await openLesson1(page);
   await expect(page.locator(".stat").last()).toContainText("100 %");
-  await page.getByRole("button", { name: "Le quiz", exact: true }).click();
+  await page.getByRole("button", { name: "Quiz", exact: true }).click();
   await expect(page.locator("#quiz-mode")).toHaveValue("recognize");
 });
 
@@ -92,7 +98,7 @@ test("audio local sans voix installée, panne de fichier et réessai", async ({
   await expect(page.locator("[data-answer]:enabled")).toHaveCount(4);
   await page.getByRole("button", { name: "Quitter le quiz" }).click();
   await expect(page.locator("#start-oral")).toBeVisible();
-  await page.getByRole("button", { name: "Le quiz", exact: true }).click();
+  await page.getByRole("button", { name: "Quiz", exact: true }).click();
   await expect(page.locator("#quiz-mode")).toHaveValue("recognize");
 });
 

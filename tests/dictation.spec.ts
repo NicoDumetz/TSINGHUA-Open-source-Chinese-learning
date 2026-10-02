@@ -67,6 +67,11 @@ async function openDictation(page: Page) {
   await expect(page.locator("#dictation-reset")).toBeEnabled();
 }
 
+async function openLesson1(page: Page) {
+  await page.getByRole("button", { name: "Leçons", exact: true }).click();
+  await page.locator('[data-open-lesson="lesson-1"]').click();
+}
+
 test("dictée : mot composé, tracé réel, indice, score et sauvegarde", async ({
   page,
 }) => {
@@ -111,6 +116,7 @@ test("dictée : mot composé, tracé réel, indice, score et sauvegarde", async 
     ),
   ).toEqual({ mode: "dictation", correct: 1, total: 5 });
   await page.reload();
+  await openLesson1(page);
   await expect(page.locator(".stat").last()).toContainText("20 %");
 });
 

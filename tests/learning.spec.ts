@@ -1,6 +1,6 @@
 import { test, expect, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
-import { allVocabulary as vocabulary } from "../src/lessons";
+import { vocabularyForScope } from "../src/lessons";
 
 const words = [
   "你好",
@@ -24,6 +24,12 @@ const words = [
 ];
 const legacyKey = "hanzi-lesson-1-v1";
 const key = "hanzi-progress-v2";
+const vocabulary = vocabularyForScope("lesson-1");
+
+async function openLesson1(page: Page) {
+  await page.getByRole("button", { name: "Leçons", exact: true }).click();
+  await page.locator('[data-open-lesson="lesson-1"]').click();
+}
 
 async function drawCharacter(page: Page, char: string, touch = false) {
   const data = JSON.parse(
@@ -89,6 +95,7 @@ test("uniquement les 18 mots, nouvelle progression et fiches complètes", async 
     ),
   );
   await page.goto("/");
+  await openLesson1(page);
   await expect(page.locator(".stat").first()).toContainText("0 / 18");
   await expect(page.locator(".dictionary-card")).toHaveCount(18);
   expect(
@@ -105,6 +112,7 @@ test("uniquement les 18 mots, nouvelle progression et fiches complètes", async 
   await page.getByRole("button", { name: "J’ai mémorisé ce mot" }).click();
   await page.getByRole("button", { name: "Fermer", exact: true }).click();
   await page.reload();
+  await openLesson1(page);
   await expect(page.locator(".stat").first()).toContainText("1 / 18");
   await page.getByRole("button", { name: "Vocabulaire", exact: true }).click();
   await page
@@ -127,7 +135,7 @@ for (const mode of ["recognize", "toChinese", "toFrench"]) {
     page,
   }) => {
     await page.goto("/");
-    await page.getByRole("button", { name: "Le quiz", exact: true }).click();
+    await page.getByRole("button", { name: "Quiz", exact: true }).click();
     await page.locator("#quiz-mode").selectOption(mode);
     await page.getByRole("button", { name: "Commencer le quiz" }).click();
     for (let i = 0; i < 10; i++) {
@@ -195,7 +203,7 @@ test("quiz sur quatre acquis seulement et décompte adapté", async ({
     { key: legacyKey, words },
   );
   await page.goto("/");
-  await page.getByRole("button", { name: "Le quiz", exact: true }).click();
+  await page.getByRole("button", { name: "Quiz", exact: true }).click();
   await page.locator("#quiz-pool").selectOption("learned");
   await page.getByRole("button", { name: "Commencer le quiz" }).click();
   await expect(page.locator(".quiz-top")).toContainText("Question 1 sur 4");
@@ -237,6 +245,7 @@ test("écriture guidée, erreur réelle, réussite de mémoire et sauvegarde", a
     "1 tracé(s) sans modèle réussi(s)",
   );
   await page.reload();
+  await openLesson1(page);
   await expect(page.locator(".stat").nth(1)).toContainText("1 / 22");
   expect(
     await page.evaluate(
@@ -250,6 +259,7 @@ test("animation, navigation dans les mots et chargement local avec reprise aprè
   page,
 }) => {
   await page.goto("/");
+  await openLesson1(page);
   await page.getByRole("button", { name: "Ouvrir la fiche de 不客气" }).click();
   await page.getByRole("button", { name: "M’entraîner à l’écrire" }).click();
   await expect(page.locator("#writing-word")).toHaveValue("12");
@@ -283,6 +293,7 @@ test("mobile : aucun débordement, mot long et écriture tactile", async ({
 }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
+  await openLesson1(page);
   const noOverflow = async () =>
     expect(
       await page.evaluate(

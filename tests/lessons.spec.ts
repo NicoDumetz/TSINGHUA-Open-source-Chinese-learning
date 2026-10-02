@@ -6,12 +6,15 @@ import {
 } from "../src/lessons";
 
 test("catalogue de leçons et sélecteurs d'exercices", async ({ page }) => {
-  expect(lessons.map((lesson) => lesson.id)).toEqual(["lesson-1"]);
-  expect(vocabularyForScope("lesson-1")).toEqual(allVocabulary);
+  expect(lessons.map((lesson) => lesson.id)).toEqual(["lesson-1", "lesson-2"]);
   expect(vocabularyForScope("all")).toEqual(allVocabulary);
 
   await page.goto("/");
-  for (const label of ["Écriture", "Le quiz", "Oral", "Vocabulaire"]) {
+  await page.getByRole("button", { name: "Leçons", exact: true }).click();
+  await expect(page.locator('[data-open-lesson="lesson-1"]')).toBeVisible();
+  await expect(page.locator('[data-open-lesson="lesson-2"]')).toBeVisible();
+  await page.locator('[data-open-lesson="lesson-1"]').click();
+  for (const label of ["Écriture", "Quiz", "Oral", "Vocabulaire"]) {
     await page.getByRole("button", { name: label, exact: true }).click();
     const selector = page.locator(
       label === "Écriture"
@@ -26,6 +29,7 @@ test("catalogue de leçons et sélecteurs d'exercices", async ({ page }) => {
     await expect(selector.locator('option[value="all"]')).toHaveCount(1);
     await selector.selectOption("all");
     await expect(selector).toHaveValue("all");
-    await page.getByRole("button", { name: "Leçon 1", exact: true }).click();
+    await page.getByRole("button", { name: "Leçons", exact: true }).click();
+    await page.locator('[data-open-lesson="lesson-1"]').click();
   }
 });
