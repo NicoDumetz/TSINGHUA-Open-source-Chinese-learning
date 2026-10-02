@@ -2,6 +2,8 @@
 
 An open-source web application for learning Mandarin Chinese through vocabulary, pronunciation, quizzes, listening exercises, and Chinese character writing.
 
+**Live website:** http://169.58.38.193
+
 The project is organized around lessons and is designed to make adding new learning content straightforward.
 
 > This is an independent open-source project and is not an official Tsinghua University website.
@@ -233,42 +235,18 @@ src/lessons/
 
 To add a lesson:
 
-1. Copy:
-
-```text
-src/lessons/lesson.template.ts
-```
-
-For example:
-
-```text
-src/lessons/lesson-2.ts
-```
-
+1. Copy `src/lessons/lesson.template.ts` to a new lesson file, for example `src/lessons/lesson-2.ts`.
 2. Give the lesson a unique `id` and `number`.
-
 3. Add its vocabulary, translations, examples, and explanations.
-
-4. Import the lesson into:
-
-```text
-src/lessons/index.ts
-```
-
+4. Import the lesson into `src/lessons/index.ts`.
 5. Add the lesson to the `lessons` array.
-
 6. Generate the required Mandarin audio:
 
 ```sh
 python scripts/generate-audio.py
 ```
 
-7. Add any missing character stroke data to:
-
-```text
-public/strokes/
-```
-
+7. Add any missing character stroke data to `public/strokes/`.
 8. Verify everything:
 
 ```sh
@@ -306,11 +284,7 @@ Mandarin audio files are included in `public/audio/`.
 
 They were generated using the `zh-CN-XiaoxiaoNeural` neural Mandarin voice with `edge-tts`.
 
-The mapping between text and audio files is stored in:
-
-```text
-public/audio/sources.json
-```
+The mapping between text and audio files is stored in `public/audio/sources.json`.
 
 Audio can be regenerated with:
 
