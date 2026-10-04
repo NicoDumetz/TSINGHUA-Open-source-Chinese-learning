@@ -65,6 +65,7 @@ const englishWords: Record<string, { meaning: string; note: string; example: str
   "呢": { meaning: "question particle: “and...?”", note: "呢 often returns a question, as in “and you?”.", example: "And you?" },
   "美国": { meaning: "United States", note: "美国 is the Chinese name for the United States.", example: "He is American." },
   "加拿大": { meaning: "Canada", note: "加拿大 is the Chinese name for Canada.", example: "She is Canadian." },
+  "法国": { meaning: "France", note: "法国 is the Chinese name for France.", example: "I am French." },
   "中国": { meaning: "China", note: "中国 literally means “middle country”.", example: "I am Chinese." },
 };
 
