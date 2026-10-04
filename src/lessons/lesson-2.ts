@@ -19,6 +19,7 @@ const vocabulary: readonly Vocabulary[] = [
   { hanzi: "呢", pinyin: "ne", meaning: "particule interrogative : « et… ? »", note: "呢 permet souvent de retourner une question : « et toi ? ».", example: { chinese: "你呢？", pinyin: "Nǐ ne?", french: "Et toi ?" } },
   { hanzi: "美国", pinyin: "Měiguó", meaning: "États-Unis", note: "美国 est le nom chinois des États-Unis.", example: { chinese: "他是美国人。", pinyin: "Tā shì Měiguó rén.", french: "Il est américain." } },
   { hanzi: "加拿大", pinyin: "Jiānádà", meaning: "Canada", note: "加拿大 est le nom chinois du Canada.", example: { chinese: "她是加拿大人。", pinyin: "Tā shì Jiānádà rén.", french: "Elle est canadienne." } },
+  { hanzi: "法国", pinyin: "Fǎguó", meaning: "France", note: "法国 est le nom chinois de la France.", example: { chinese: "我是法国人。", pinyin: "Wǒ shì Fǎguó rén.", french: "Je suis français." } },
   { hanzi: "中国", pinyin: "Zhōngguó", meaning: "Chine", note: "中国 signifie littéralement « pays du milieu ».", example: { chinese: "我是中国人。", pinyin: "Wǒ shì Zhōngguó rén.", french: "Je suis chinois." } },
 ];
 
