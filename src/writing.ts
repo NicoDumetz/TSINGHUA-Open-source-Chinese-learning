@@ -16,6 +16,24 @@ let words: readonly LessonVocabulary[] = [];
 let mode: "observe" | WritingMode = "observe";
 let resizeObserver: ResizeObserver | undefined;
 
+function randomCharacterTarget() {
+  const pool = words.flatMap((word, nextWordIndex) =>
+    [...word.hanzi].map((_, nextCharacterIndex) => ({
+      wordIndex: nextWordIndex,
+      characterIndex: nextCharacterIndex,
+    })),
+  );
+  const choices =
+    pool.length > 1
+      ? pool.filter(
+          (item) =>
+            item.wordIndex !== wordIndex ||
+            item.characterIndex !== characterIndex,
+        )
+      : pool;
+  return choices[Math.floor(Math.random() * choices.length)];
+}
+
 export function unmountWriting() {
   generation++;
   activeContainer = null;
@@ -56,6 +74,7 @@ function draw() {
       <aside class="writing-sidebar">
         <label for="writing-word">Le mot à travailler</label>
         <select id="writing-word">${words.map((v, i) => `<option value="${i}" ${i === wordIndex ? "selected" : ""}>${mode === "memory" ? v.pinyin : v.hanzi + " · " + v.pinyin} — ${wordText(v, getLanguage()).meaning}</option>`).join("")}</select>
+        <button class="secondary writing-random" id="writing-random" type="button">Choisir un caractère aléatoire</button>
         <div class="writing-word-summary">
           <strong class="${mode === "memory" ? "memory-word" : ""}">${mode === "memory" ? word.pinyin : word.hanzi}</strong>
           ${mode !== "memory" ? `<span class="pinyin">${word.pinyin}</span>` : ""}
@@ -87,6 +106,13 @@ function draw() {
     <aside class="tip"><span class="tip-character">字</span><div><strong>Observer → tracer → retrouver de mémoire.</strong><p>Commence par regarder l’animation. Trace ensuite avec le guide, puis essaie sans modèle. La validation aide à apprendre les traits ; elle ne remplace pas la pratique sur papier.</p></div></aside>
     <p class="writing-credit">Animation et vérification : <a href="https://hanziwriter.org/" target="_blank" rel="noreferrer">Hanzi Writer</a> · Données : <a href="https://github.com/skishore/makemeahanzi" target="_blank" rel="noreferrer">Make Me a Hanzi / Arphic</a> · <a href="./strokes/ARPHICPL.TXT" target="_blank">Licence</a></p>`;
   container.querySelector("#writer-mount")!.append(target);
+  container.querySelector<HTMLButtonElement>("#writing-random")!.onclick = () => {
+    const next = randomCharacterTarget();
+    if (!next) return;
+    wordIndex = next.wordIndex;
+    characterIndex = next.characterIndex;
+    draw();
+  };
   container.querySelector<HTMLSelectElement>("#writing-word")!.onchange = (
     e,
   ) => {

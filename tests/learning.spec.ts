@@ -258,12 +258,25 @@ test("écriture guidée, erreur réelle, réussite de mémoire et sauvegarde", a
 test("animation, navigation dans les mots et chargement local avec reprise après erreur", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    Math.random = () => 0.999;
+  });
   await page.goto("/");
   await openLesson1(page);
   await page.getByRole("button", { name: "Ouvrir la fiche de 不客气" }).click();
   await page.getByRole("button", { name: "M’entraîner à l’écrire" }).click();
   await expect(page.locator("#writing-word")).toHaveValue("12");
   await expect(page.locator("[data-writing-character]")).toHaveCount(3);
+  await page
+    .getByRole("button", { name: "Choisir un caractère aléatoire" })
+    .click();
+  await expect(page.locator("#writing-word")).toHaveValue("17");
+  await expect(page.locator('[data-writing-character="1"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator("#writing-status")).toContainText("6 traits");
+  await page.locator("#writing-word").selectOption("12");
   await expect(page.locator("#writing-status")).toContainText("4 traits");
   await page.getByRole("button", { name: "Voir l’ordre des traits" }).click();
   await expect(page.locator("#writing-status")).toContainText(

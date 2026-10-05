@@ -1746,6 +1746,11 @@ footer > span:last-child svg {
   text-align: center;
   padding: 28px 0 20px;
 }
+.writing-random {
+  width: 100%;
+  justify-content: center;
+  margin-top: 12px;
+}
 .writing-word-summary > strong {
   font-family: "Noto Serif SC", serif;
   font-size: 44px;
