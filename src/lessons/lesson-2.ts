@@ -2,7 +2,6 @@ import type { Lesson, Vocabulary } from "../domain";
 
 const vocabulary: readonly Vocabulary[] = [
   { hanzi: "同学", pinyin: "tóngxué", meaning: "camarade de classe", note: "同学 désigne une personne qui étudie dans la même classe que toi.", example: { chinese: "她是我的同学。", pinyin: "Tā shì wǒ de tóngxué.", french: "C’est ma camarade de classe." } },
-  { hanzi: "朋友", pinyin: "péngyou", meaning: "ami, amie", note: "朋友 désigne une personne avec qui l’on entretient une relation amicale.", example: { chinese: "他是我的朋友。", pinyin: "Tā shì wǒ de péngyou.", french: "C’est mon ami." } },
   { hanzi: "们", pinyin: "men", meaning: "suffixe du pluriel pour les personnes", note: "Ajoute 们 après un pronom ou un nom de personne pour parler de plusieurs personnes.", example: { chinese: "我们是同学。", pinyin: "Wǒmen shì tóngxué.", french: "Nous sommes camarades de classe." } },
   { hanzi: "来", pinyin: "lái", meaning: "venir", note: "来 exprime un mouvement vers la personne qui parle ou vers le lieu de référence.", example: { chinese: "你来吗？", pinyin: "Nǐ lái ma?", french: "Tu viens ?" } },
   { hanzi: "介绍", pinyin: "jièshào", meaning: "présenter, introduire", note: "介绍 sert à présenter une personne ou à faire les présentations.", example: { chinese: "我介绍一下儿。", pinyin: "Wǒ jièshào yíxiàr.", french: "Je vais présenter rapidement." } },

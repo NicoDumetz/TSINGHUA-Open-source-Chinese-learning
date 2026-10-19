@@ -2216,3 +2216,35 @@ footer > span:last-child svg {
   padding: 12px;
   border-radius: 8px;
 }
+
+.typing-label {
+  display: block;
+  margin: 1.5rem auto .45rem;
+  max-width: 34rem;
+  color: var(--muted, #777);
+  font-size: .9rem;
+}
+.typing-answer {
+  display: block;
+  width: min(100%, 34rem);
+  margin: 0 auto 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line, #dedbd4);
+  border-radius: 14px;
+  background: var(--surface, white);
+  color: var(--ink, #242321);
+  font: inherit;
+  font-size: 1.25rem;
+}
+.tone-keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .45rem;
+  max-width: 38rem;
+  margin: 0 auto 1.1rem;
+}
+.tone-key {
+  min-width: 2.7rem;
+  padding: .45rem .65rem;
+}

@@ -53,6 +53,7 @@ let quiz: LessonVocabulary[] = [];
 let choices: LessonVocabulary[] = [];
 let question = 0;
 let selected: string | null = null;
+let typedAnswer = "";
 let correct = 0;
 let finished = false;
 let quizPool = "all";
@@ -269,6 +270,8 @@ const modeLabels: Record<QuizMode, string> = {
   toFrench: "Chinois → français",
   oral: "Écoute → chinois",
   dictation: "Écouter et écrire",
+  typePinyin: "Écrire le pinyin",
+  typeChinese: "Clavier chinois · saisir les caractères",
 };
 function oralIntro() {
   return `<section class="quiz-intro"><span class="large-icon">${icon("sound")}</span><span class="eyebrow muted">${currentScopeLabel().toUpperCase()} · COMPRÉHENSION ORALE</span><h1>Tends l’oreille<span class="accent">.</span></h1><p>Écoute un mot, puis retrouve son écriture chinoise.<br>Choisis parmi quatre propositions ou dessine les caractères.</p>
@@ -309,6 +312,11 @@ function quizView() {
     ${mistakes.length ? `<div class="review-list">${mistakes.map((c) => `<button data-word="${vocabulary.indexOf(c)}"><strong lang="zh-CN">${c.hanzi}</strong><span>${c.pinyin}<small>${textFor(c).meaning}</small></span>${icon("arrow")}</button>`).join("")}</div>` : ""}
     <div class="result-actions">${mistakes.length ? `<button class="primary" id="retry-mistakes">Revoir mes ${mistakes.length} erreur(s)</button>` : ""}<button class="${mistakes.length ? "secondary" : "primary"}" id="retry">Nouveau quiz</button><button class="secondary" id="quiz-settings">${quizMode === "oral" ? "Retour à l’oral" : "Changer de mode"}</button><button class="secondary" data-page="lesson">Retour à la leçon</button></div></section>`;
   const c = quiz[question];
+  if (quizMode === "typePinyin" || quizMode === "typeChinese") {
+    const target = quizMode === "typePinyin" ? c.pinyin : c.hanzi;
+    const keys = quizMode === "typePinyin" ? ["ā", "á", "ǎ", "à", "ē", "é", "ě", "è", "ī", "í", "ǐ", "ì", "ō", "ó", "ǒ", "ò", "ū", "ú", "ǔ", "ù", "ǖ", "ǘ", "ǚ", "ǜ"] : [...new Set(vocabulary.flatMap((word) => [...word.hanzi]))];
+    return `<section class="quiz-active"><div class="quiz-top"><button class="text-link" id="quit-quiz">← Quitter le quiz</button><span>Question ${question + 1} sur ${quiz.length}</span><span>${correct} bonne${correct > 1 ? "s" : ""} réponse${correct > 1 ? "s" : ""}</span></div><div class="quiz-progress"><i style="width:${(question / quiz.length) * 100}%"></i></div><span class="eyebrow muted">${quizMode === "typePinyin" ? "ÉCRIS LE PINYIN AVEC SES TONS" : "ÉCRIS EN CARACTÈRES CHINOIS"}</span><h1 class="quiz-pinyin ${quizMode === "typeChinese" ? "french-prompt" : "chinese-prompt"}">${quizMode === "typePinyin" ? c.hanzi : textFor(c).meaning}</h1><label class="typing-label" for="typed-answer">${quizMode === "typePinyin" ? "Pinyin" : "Réponse en chinois"}</label><input id="typed-answer" class="typing-answer" lang="${quizMode === "typePinyin" ? "zh-Latn" : "zh-CN"}" autocomplete="off" value="${escape(typedAnswer)}" ${selected ? "disabled" : ""} placeholder="${quizMode === "typePinyin" ? "Ex. nǐ hǎo" : "Saisis les caractères chinois"}"/><div class="tone-keyboard" aria-label="${quizMode === "typePinyin" ? "Touches des tons pinyin" : "Clavier chinois"}">${keys.map((key) => `<button type="button" class="secondary tone-key" data-type-key="${key}" ${selected ? "disabled" : ""}>${key}</button>`).join("")}</div>${selected ? `<div class="feedback ${selected === c.hanzi ? "success" : "error"}" role="status"><strong>${selected === c.hanzi ? "Exactement !" : "La bonne réponse : " + target}</strong><span>${c.hanzi} · ${c.pinyin} · ${textFor(c).meaning}</span><small>${textFor(c).note}</small></div><button class="primary next-question" id="next-question">${question === quiz.length - 1 ? "Voir mon résultat" : "Question suivante"} ${icon("arrow")}</button>` : `<button class="primary" id="submit-typed">Vérifier</button><p class="subtle">${quizMode === "typeChinese" ? "Utilise les caractères proposés ou un clavier chinois configuré sur ton appareil." : "Les touches ci-dessus insèrent les voyelles accentuées. Les tons et espaces sont vérifiés."}</p>`}</section>`;
+  }
   const prompt =
     quizMode === "toFrench"
       ? c.hanzi
@@ -344,6 +352,7 @@ function startQuiz(review?: readonly LessonVocabulary[]) {
 function prepareQuestion() {
   stopAudio();
   selected = null;
+  typedAnswer = "";
   oralHeard = false;
   const c = quiz[question];
   choices = shuffle([
@@ -571,6 +580,28 @@ function bind() {
       .value as QuizMode;
     startQuiz();
   });
+  const typedInput = document.querySelector<HTMLInputElement>("#typed-answer");
+  typedInput?.addEventListener("input", () => { typedAnswer = typedInput.value; });
+  document.querySelectorAll<HTMLButtonElement>("[data-type-key]").forEach((button) => {
+    button.onclick = () => {
+      typedAnswer += button.dataset.typeKey || "";
+      const input = document.querySelector<HTMLInputElement>("#typed-answer");
+      if (input) { input.value = typedAnswer; input.focus(); }
+    };
+  });
+  const submitTyped = () => {
+    if (selected || !quiz.length) return;
+    const current = quiz[question];
+    const answer = typedAnswer.normalize("NFC").trim().toLowerCase().replace(/\s*\/\s*/g, "/");
+    const expected = (quizMode === "typePinyin" ? current.pinyin : current.hanzi).normalize("NFC").toLowerCase().replace(/\s*\/\s*/g, "/");
+    selected = answer === expected ? current.hanzi : "__incorrect__";
+    if (selected === current.hanzi) correct++;
+    else mistakes.push(current);
+    render();
+    document.querySelector<HTMLButtonElement>("#next-question")?.focus({ preventScroll: true });
+  };
+  on("#submit-typed", submitTyped);
+  typedInput?.addEventListener("keydown", (event) => { if (event.key === "Enter") submitTyped(); });
   on("#retry", () => startQuiz());
   on("#retry-mistakes", () => startQuiz([...mistakes]));
   for (const selector of ["#quit-quiz", "#quiz-settings"])

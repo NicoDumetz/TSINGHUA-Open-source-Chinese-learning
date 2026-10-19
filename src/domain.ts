@@ -31,7 +31,9 @@ export type QuizMode =
   | "toChinese"
   | "toFrench"
   | "oral"
-  | "dictation";
+  | "dictation"
+  | "typePinyin"
+  | "typeChinese";
 export type WritingMode = "guided" | "memory";
 
 export const wordKey = (word: Pick<LessonVocabulary, "lessonId" | "hanzi">) =>

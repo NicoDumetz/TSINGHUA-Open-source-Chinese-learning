@@ -1,8 +1,9 @@
 import { lesson1 } from "./lesson-1";
 import { lesson2 } from "./lesson-2";
+import { lesson3 } from "./lesson-3";
 import type { Lesson, LessonVocabulary, StudyScope } from "../domain";
 
-export const lessons: readonly Lesson[] = [lesson1, lesson2];
+export const lessons: readonly Lesson[] = [lesson1, lesson2, lesson3];
 
 export const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
 
