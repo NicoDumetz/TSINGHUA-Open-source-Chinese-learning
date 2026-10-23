@@ -13,16 +13,12 @@ let generation = 0;
 let wordIndex = 0;
 let characterIndex = 0;
 let words: readonly LessonVocabulary[] = [];
+let selectedCharacters = new Set<string>();
 let mode: "observe" | WritingMode = "observe";
 let resizeObserver: ResizeObserver | undefined;
 
 function randomCharacterTarget() {
-  const pool = words.flatMap((word, nextWordIndex) =>
-    [...word.hanzi].map((_, nextCharacterIndex) => ({
-      wordIndex: nextWordIndex,
-      characterIndex: nextCharacterIndex,
-    })),
-  );
+  const pool = practicePool();
   const choices =
     pool.length > 1
       ? pool.filter(
@@ -32,6 +28,14 @@ function randomCharacterTarget() {
         )
       : pool;
   return choices[Math.floor(Math.random() * choices.length)];
+}
+
+function practicePool() {
+  return words.flatMap((word, wordIndex) =>
+    [...word.hanzi].flatMap((char, characterIndex) =>
+      selectedCharacters.has(char) ? [{ wordIndex, characterIndex }] : [],
+    ),
+  );
 }
 
 export function unmountWriting() {
@@ -50,6 +54,7 @@ export function mountWriting(
 ) {
   activeContainer = container;
   words = selectedWords;
+  selectedCharacters = new Set(selectedWords.flatMap((word) => [...word.hanzi]));
   wordIndex = Math.min(initialWord, Math.max(0, words.length - 1));
   characterIndex = 0;
   mode = "observe";
@@ -65,6 +70,14 @@ function draw() {
   resizeObserver?.disconnect();
   target.remove();
   target.style.visibility = "hidden";
+  const pool = practicePool();
+  if (pool.length) {
+    const currentIsSelected = selectedCharacters.has([...words[wordIndex].hanzi][characterIndex]);
+    if (!currentIsSelected) {
+      wordIndex = pool[0].wordIndex;
+      characterIndex = pool[0].characterIndex;
+    }
+  }
   const word = words[wordIndex];
   const localizedWord = wordText(word, getLanguage());
   const letters = [...word.hanzi];
@@ -83,6 +96,7 @@ function draw() {
         <span class="eyebrow muted">${letters.length === 1 ? "UN CARACTÈRE" : "UN CARACTÈRE APRÈS L’AUTRE"}</span>
         <div class="writing-characters">${letters.map((c, i) => `<button class="${i === characterIndex ? "selected" : ""}" data-writing-character="${i}" aria-label="Caractère ${i + 1}" aria-pressed="${i === characterIndex}">${mode === "memory" ? i + 1 : c}<small>${progress.writing[characterKey(word.lessonId, c)]?.memory ? "✓" : i + 1}</small></button>`).join("")}</div>
         <p class="subtle">Les mots s’écrivent de gauche à droite. Travaille chaque caractère, puis recopie le mot entier sur papier.</p>
+        <div class="writing-character-picker"><div class="writing-picker-heading"><strong>Ma liste de caractères</strong><button class="text-link" type="button" id="writing-select-all">Tout</button></div><div class="writing-picker-list">${[...new Set(words.flatMap((item) => [...item.hanzi]))].map((char) => `<label><input type="checkbox" data-practice-character="${char}" ${selectedCharacters.has(char) ? "checked" : ""}><span lang="zh-CN">${char}</span></label>`).join("")}</div><p class="subtle">${selectedCharacters.size} caractère(s) sélectionné(s)</p></div>
         <div class="writing-record"><strong>Ton entraînement sur ce caractère</strong><p>${progress.writing[characterKey(word.lessonId, char)]?.guided || 0} tracé(s) guidé(s) réussi(s)<br>${progress.writing[characterKey(word.lessonId, char)]?.memory || 0} tracé(s) sans modèle réussi(s)</p></div>
       </aside>
       <section class="writing-workspace" aria-label="Atelier de tracé">
@@ -99,7 +113,7 @@ function draw() {
         <p class="writing-instruction">${mode === "observe" ? "Regarde l’ordre et le sens des traits, puis passe au tracé." : mode === "guided" ? "Suis le modèle avec ton doigt, ton stylet ou ta souris, dans l’ordre des traits." : `Écris le caractère ${characterIndex + 1} de « ${word.pinyin} », sans modèle ni indice automatique.`}</p>
         <div class="writing-board"><div class="writing-grid" aria-hidden="true"></div><div id="writer-mount"></div></div>
         <p id="writing-status" class="writing-status" role="status">Chargement du modèle…</p>
-        <div class="writing-actions"><button class="primary" id="writing-restart" disabled>${mode === "observe" ? "▶ Voir l’ordre des traits" : "Recommencer le tracé"}</button><button class="secondary" id="writing-next">${characterIndex < letters.length - 1 ? "Caractère suivant →" : wordIndex < words.length - 1 ? "Mot suivant →" : "Revenir au premier mot"}</button></div>
+        <div class="writing-actions"><button class="primary" id="writing-restart" disabled>${mode === "observe" ? "▶ Voir l’ordre des traits" : "Recommencer le tracé"}</button><button class="secondary" id="writing-next">${pool.length > 1 ? "Caractère suivant →" : "Recommencer ce caractère"}</button></div>
         <p class="subtle">${mode === "memory" ? "Un tracé sans erreur est enregistré comme réussi. Besoin d’aide ? Reviens à « Tracer »." : "La forme, la direction et l’ordre des traits sont vérifiés pendant le tracé."}</p>
       </section>
     </div>
@@ -118,6 +132,20 @@ function draw() {
   ) => {
     wordIndex = Number((e.target as HTMLSelectElement).value);
     characterIndex = 0;
+    for (const char of words[wordIndex].hanzi) selectedCharacters.add(char);
+    draw();
+  };
+  container.querySelectorAll<HTMLInputElement>("[data-practice-character]").forEach((checkbox) => {
+    checkbox.onchange = () => {
+      const char = checkbox.dataset.practiceCharacter!;
+      if (checkbox.checked) selectedCharacters.add(char);
+      else if (selectedCharacters.size > 1) selectedCharacters.delete(char);
+      else checkbox.checked = true;
+      draw();
+    };
+  });
+  container.querySelector<HTMLButtonElement>("#writing-select-all")!.onclick = () => {
+    selectedCharacters = new Set(words.flatMap((item) => [...item.hanzi]));
     draw();
   };
   container
@@ -137,11 +165,11 @@ function draw() {
       }),
   );
   container.querySelector<HTMLButtonElement>("#writing-next")!.onclick = () => {
-    if (characterIndex < letters.length - 1) characterIndex++;
-    else {
-      wordIndex = (wordIndex + 1) % words.length;
-      characterIndex = 0;
-    }
+    const available = practicePool();
+    const current = available.findIndex((item) => item.wordIndex === wordIndex && item.characterIndex === characterIndex);
+    const next = available[(current + 1) % available.length];
+    wordIndex = next.wordIndex;
+    characterIndex = next.characterIndex;
     draw();
   };
   void initialize();

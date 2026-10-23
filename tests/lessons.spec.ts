@@ -59,3 +59,17 @@ test("saisie du pinyin avec tons et clavier de caractères chinois", async ({ pa
   await page.getByRole("button", { name: "Vérifier" }).click();
   await expect(page.locator(".feedback")).toContainText("Exactement !");
 });
+
+test("la liste de caractères limite la pratique de l’écriture", async ({ page }) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await page.getByRole("button", { name: "Écriture", exact: true }).click();
+  await page.locator("#writing-scope").selectOption("lesson-3");
+  const options = page.locator("[data-practice-character]");
+  await expect(options.first()).toBeVisible();
+  const initialCount = await options.count();
+  const first = options.first();
+  await first.uncheck();
+  await expect(page.locator(".writing-character-picker > .subtle")).toContainText(`${initialCount - 1} caractère(s)`);
+  await page.locator("#writing-select-all").click();
+  await expect(page.locator(".writing-character-picker > .subtle")).toContainText(`${initialCount} caractère(s)`);
+});

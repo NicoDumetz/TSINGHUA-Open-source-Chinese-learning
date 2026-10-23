@@ -2248,3 +2248,48 @@ footer > span:last-child svg {
   min-width: 2.7rem;
   padding: .45rem .65rem;
 }
+
+.writing-character-picker {
+  margin: 20px 0 8px;
+  padding: 15px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+.writing-picker-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  font-size: 13px;
+}
+.writing-picker-heading .text-link {
+  font-size: 12px;
+}
+.writing-picker-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  max-height: 175px;
+  overflow: auto;
+}
+.writing-sidebar .writing-picker-list label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fafcf6;
+  font-size: 17px;
+  cursor: pointer;
+}
+.writing-picker-list input {
+  width: 14px;
+  height: 14px;
+  margin: 0;
+  accent-color: var(--green);
+}
+.writing-character-picker > .subtle {
+  margin: 9px 0 0;
+}
