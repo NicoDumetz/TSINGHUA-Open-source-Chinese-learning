@@ -67,6 +67,20 @@ const englishWords: Record<string, { meaning: string; note: string; example: str
   "加拿大": { meaning: "Canada", note: "加拿大 is the Chinese name for Canada.", example: "She is Canadian." },
   "法国": { meaning: "France", note: "法国 is the Chinese name for France.", example: "I am French." },
   "中国": { meaning: "China", note: "中国 literally means “middle country”.", example: "I am Chinese." },
+  "那": { meaning: "that; that one", note: "那 refers to someone or something at a distance. Before a noun, it can mean “that ... over there”.", example: "What is that over there?" },
+  "谁": { meaning: "who", note: "谁 asks who a person is. Both shéi and shuí are accepted pronunciations; shéi is common in speech.", example: "Who is that?" },
+  "书": { meaning: "book", note: "书 means book. With the measure word 本, 一本书 means “one book”.", example: "This is a book." },
+  "同屋": { meaning: "roommate", note: "同屋 is someone who shares a room or a home with you.", example: "He is my roommate." },
+  "汉语": { meaning: "Chinese language; Mandarin", note: "汉语 refers to the Chinese language. 汉 refers to the Han people and 语 means language.", example: "I study Chinese." },
+  "课本": { meaning: "textbook", note: "课本 is a book used for a class or as a textbook.", example: "This is a Chinese textbook." },
+  "词典": { meaning: "dictionary", note: "词典 is a dictionary of words. A common measure word is 本: 一本词典.", example: "This is a Chinese dictionary." },
+  "就是": { meaning: "exactly; that is", note: "就是 can confirm or clarify an identification: “that is exactly ...” or “that means ...”.", example: "This is exactly the textbook." },
+  "日语": { meaning: "Japanese language", note: "日语 means the Japanese language.", example: "She studies Japanese." },
+  "这": { meaning: "this; this one", note: "这 refers to something or someone nearby. Before a noun, it is often followed by a measure word: 这本书.", example: "What is this?" },
+  "杂志": { meaning: "magazine", note: "杂志 means magazine. It is often counted with 本: 一本杂志.", example: "This is a magazine." },
+  "音乐": { meaning: "music", note: "音乐 means music. Note the fourth tone yuè for 乐 in this word.", example: "I like music." },
+  "朋友": { meaning: "friend", note: "朋友 is someone with whom you have a friendly relationship.", example: "He is my friend." },
+  "日本": { meaning: "Japan", note: "日本 is the Chinese name for Japan. The characters literally mean “origin of the sun”.", example: "She is Japanese." },
 };
 
 export const wordText = (

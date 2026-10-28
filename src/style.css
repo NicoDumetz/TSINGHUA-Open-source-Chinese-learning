@@ -2293,3 +2293,67 @@ footer > span:last-child svg {
 .writing-character-picker > .subtle {
   margin: 9px 0 0;
 }
+
+.writing-sidebar .writing-hide-pinyin {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+.writing-hide-pinyin input {
+  flex: 0 0 auto;
+  margin: 2px 0 0;
+  accent-color: var(--green);
+}
+.writing-pinyin-entry {
+  margin: 0 0 18px;
+  padding: 13px;
+  border-radius: 9px;
+  background: #f7f8f2;
+}
+.writing-sidebar .writing-pinyin-entry > label {
+  margin-bottom: 7px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.writing-pinyin-entry > div {
+  display: flex;
+  gap: 7px;
+}
+.writing-pinyin-entry input {
+  min-width: 0;
+  width: 100%;
+  padding: 9px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: white;
+}
+.writing-pinyin-entry button {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+}
+.writing-pinyin-entry small {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.5;
+}
+.writing-pinyin-feedback {
+  margin: 8px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+}
+.writing-pinyin-feedback.correct {
+  color: #287449;
+}
+.writing-pinyin-feedback.incorrect {
+  color: #a34b37;
+}
+.writing-word-summary > strong.memory-meaning {
+  font-size: 20px;
+  line-height: 1.4;
+}

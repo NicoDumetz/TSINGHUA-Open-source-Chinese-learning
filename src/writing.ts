@@ -15,6 +15,9 @@ let characterIndex = 0;
 let words: readonly LessonVocabulary[] = [];
 let selectedCharacters = new Set<string>();
 let mode: "observe" | WritingMode = "observe";
+let hidePinyinInMemory = false;
+let typedPinyin = "";
+let pinyinFeedback: "correct" | "incorrect" | null = null;
 let resizeObserver: ResizeObserver | undefined;
 
 function randomCharacterTarget() {
@@ -38,6 +41,68 @@ function practicePool() {
   );
 }
 
+const tonedVowels: Record<string, string[]> = {
+  a: ["ā", "á", "ǎ", "à"],
+  e: ["ē", "é", "ě", "è"],
+  i: ["ī", "í", "ǐ", "ì"],
+  o: ["ō", "ó", "ǒ", "ò"],
+  u: ["ū", "ú", "ǔ", "ù"],
+  ü: ["ǖ", "ǘ", "ǚ", "ǜ"],
+};
+
+function convertToneNumbers(value: string) {
+  return value
+    .normalize("NFC")
+    .toLowerCase()
+    .replace(/([a-züv]+)([1-5])/g, (_match, rawSyllable: string, rawTone: string) => {
+      const syllable = rawSyllable.replace(/v/g, "ü");
+      const tone = Number(rawTone);
+      if (tone === 5) return syllable;
+      let vowelIndex = syllable.indexOf("a");
+      if (vowelIndex < 0) vowelIndex = syllable.indexOf("e");
+      if (vowelIndex < 0 && syllable.includes("ou")) vowelIndex = syllable.indexOf("o");
+      if (vowelIndex < 0) {
+        for (let index = syllable.length - 1; index >= 0; index--) {
+          if ("aeiouü".includes(syllable[index])) { vowelIndex = index; break; }
+        }
+      }
+      if (vowelIndex < 0) return syllable;
+      const vowel = syllable[vowelIndex];
+      const marked = tonedVowels[vowel]?.[tone - 1];
+      return marked ? `${syllable.slice(0, vowelIndex)}${marked}${syllable.slice(vowelIndex + 1)}` : syllable;
+    })
+    .replace(/v/g, "ü");
+}
+
+function normalizeTypedPinyin(value: string) {
+  return convertToneNumbers(value)
+    .replace(/\s*\/\s*/g, "/")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchesPinyin(input: string, expected: string) {
+  const normalizedInput = normalizeTypedPinyin(input);
+  return expected.split("/").some((candidate) =>
+    normalizeTypedPinyin(candidate).replace(/\s/g, "") === normalizedInput.replace(/\s/g, ""),
+  );
+}
+
+function resetPinyinAttempt() {
+  typedPinyin = "";
+  pinyinFeedback = null;
+}
+
+function escapeAttribute(value: string) {
+  return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
+}
+
+function wordOptionLabel(word: LessonVocabulary) {
+  const meaning = wordText(word, getLanguage()).meaning;
+  if (mode === "memory") return hidePinyinInMemory ? meaning : `${word.pinyin} — ${meaning}`;
+  return `${word.hanzi} · ${word.pinyin} — ${meaning}`;
+}
+
 export function unmountWriting() {
   generation++;
   activeContainer = null;
@@ -55,6 +120,9 @@ export function mountWriting(
   activeContainer = container;
   words = selectedWords;
   selectedCharacters = new Set(selectedWords.flatMap((word) => [...word.hanzi]));
+  hidePinyinInMemory = false;
+  typedPinyin = "";
+  pinyinFeedback = null;
   wordIndex = Math.min(initialWord, Math.max(0, words.length - 1));
   characterIndex = 0;
   mode = "observe";
@@ -86,13 +154,14 @@ function draw() {
     <div class="writing-layout">
       <aside class="writing-sidebar">
         <label for="writing-word">Le mot à travailler</label>
-        <select id="writing-word">${words.map((v, i) => `<option value="${i}" ${i === wordIndex ? "selected" : ""}>${mode === "memory" ? v.pinyin : v.hanzi + " · " + v.pinyin} — ${wordText(v, getLanguage()).meaning}</option>`).join("")}</select>
+        <select id="writing-word">${words.map((v, i) => `<option value="${i}" ${i === wordIndex ? "selected" : ""}>${wordOptionLabel(v)}</option>`).join("")}</select>
         <button class="secondary writing-random" id="writing-random" type="button">Choisir un caractère aléatoire</button>
         <div class="writing-word-summary">
-          <strong class="${mode === "memory" ? "memory-word" : ""}">${mode === "memory" ? word.pinyin : word.hanzi}</strong>
+          <strong class="${mode === "memory" ? `memory-word${hidePinyinInMemory ? " memory-meaning" : ""}` : ""}">${mode === "memory" ? hidePinyinInMemory ? localizedWord.meaning : word.pinyin : word.hanzi}</strong>
           ${mode !== "memory" ? `<span class="pinyin">${word.pinyin}</span>` : ""}
-          <p>${localizedWord.meaning}</p>
+          ${mode === "memory" && hidePinyinInMemory ? "" : `<p>${localizedWord.meaning}</p>`}
         </div>
+        ${mode === "memory" ? `<label class="writing-hide-pinyin"><input type="checkbox" id="writing-hide-pinyin" ${hidePinyinInMemory ? "checked" : ""}>Cacher le pinyin et garder le sens ${getLanguage() === "fr" ? "français" : "anglais"}</label>${hidePinyinInMemory ? `<div class="writing-pinyin-entry"><label for="writing-pinyin-answer">Écris le pinyin du mot</label><div><input id="writing-pinyin-answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ex. e4, ni3 hao3" value="${escapeAttribute(typedPinyin)}"><button class="secondary" id="check-writing-pinyin" type="button">Vérifier</button></div><small>Les numéros deviennent des accents en direct : e4 → è, ni3 hao3 → nǐ hǎo. Le ton neutre peut s’écrire 5.</small><p id="writing-pinyin-feedback" class="writing-pinyin-feedback ${pinyinFeedback || ""}" role="status" ${pinyinFeedback ? "" : "hidden"}>${pinyinFeedback === "correct" ? "Pinyin correct !" : pinyinFeedback === "incorrect" ? `À revoir. Réponse : ${word.pinyin}` : ""}</p></div>` : ""}` : ""}
         <span class="eyebrow muted">${letters.length === 1 ? "UN CARACTÈRE" : "UN CARACTÈRE APRÈS L’AUTRE"}</span>
         <div class="writing-characters">${letters.map((c, i) => `<button class="${i === characterIndex ? "selected" : ""}" data-writing-character="${i}" aria-label="Caractère ${i + 1}" aria-pressed="${i === characterIndex}">${mode === "memory" ? i + 1 : c}<small>${progress.writing[characterKey(word.lessonId, c)]?.memory ? "✓" : i + 1}</small></button>`).join("")}</div>
         <p class="subtle">Les mots s’écrivent de gauche à droite. Travaille chaque caractère, puis recopie le mot entier sur papier.</p>
@@ -110,7 +179,7 @@ function draw() {
               `<button data-writing-mode="${id}" class="${mode === id ? "selected" : ""}" aria-pressed="${mode === id}">${label}</button>`,
           )
           .join("")}</div>
-        <p class="writing-instruction">${mode === "observe" ? "Regarde l’ordre et le sens des traits, puis passe au tracé." : mode === "guided" ? "Suis le modèle avec ton doigt, ton stylet ou ta souris, dans l’ordre des traits." : `Écris le caractère ${characterIndex + 1} de « ${word.pinyin} », sans modèle ni indice automatique.`}</p>
+        <p class="writing-instruction">${mode === "observe" ? "Regarde l’ordre et le sens des traits, puis passe au tracé." : mode === "guided" ? "Suis le modèle avec ton doigt, ton stylet ou ta souris, dans l’ordre des traits." : `Écris le caractère ${characterIndex + 1} de « ${hidePinyinInMemory ? localizedWord.meaning : word.pinyin} », sans modèle ni indice automatique.`}</p>
         <div class="writing-board"><div class="writing-grid" aria-hidden="true"></div><div id="writer-mount"></div></div>
         <p id="writing-status" class="writing-status" role="status">Chargement du modèle…</p>
         <div class="writing-actions"><button class="primary" id="writing-restart" disabled>${mode === "observe" ? "▶ Voir l’ordre des traits" : "Recommencer le tracé"}</button><button class="secondary" id="writing-next">${pool.length > 1 ? "Caractère suivant →" : "Recommencer ce caractère"}</button></div>
@@ -125,6 +194,7 @@ function draw() {
     if (!next) return;
     wordIndex = next.wordIndex;
     characterIndex = next.characterIndex;
+    resetPinyinAttempt();
     draw();
   };
   container.querySelector<HTMLSelectElement>("#writing-word")!.onchange = (
@@ -132,6 +202,7 @@ function draw() {
   ) => {
     wordIndex = Number((e.target as HTMLSelectElement).value);
     characterIndex = 0;
+    resetPinyinAttempt();
     for (const char of words[wordIndex].hanzi) selectedCharacters.add(char);
     draw();
   };
@@ -148,12 +219,42 @@ function draw() {
     selectedCharacters = new Set(words.flatMap((item) => [...item.hanzi]));
     draw();
   };
+  const hidePinyinToggle = container.querySelector<HTMLInputElement>("#writing-hide-pinyin");
+  if (hidePinyinToggle) hidePinyinToggle.onchange = () => {
+    hidePinyinInMemory = hidePinyinToggle.checked;
+    resetPinyinAttempt();
+    draw();
+  };
+  const pinyinInput = container.querySelector<HTMLInputElement>("#writing-pinyin-answer");
+  const pinyinStatus = container.querySelector<HTMLParagraphElement>("#writing-pinyin-feedback");
+  if (pinyinInput && pinyinStatus) {
+    pinyinInput.oninput = () => {
+      const rawValue = pinyinInput.value;
+      const cursor = pinyinInput.selectionStart ?? rawValue.length;
+      typedPinyin = convertToneNumbers(rawValue);
+      if (typedPinyin !== rawValue) {
+        pinyinInput.value = typedPinyin;
+        const nextCursor = convertToneNumbers(rawValue.slice(0, cursor)).length;
+        pinyinInput.setSelectionRange(nextCursor, nextCursor);
+      }
+      pinyinFeedback = null;
+      pinyinStatus.hidden = true;
+    };
+    container.querySelector<HTMLButtonElement>("#check-writing-pinyin")!.onclick = () => {
+      typedPinyin = pinyinInput.value;
+      pinyinFeedback = matchesPinyin(typedPinyin, word.pinyin) ? "correct" : "incorrect";
+      pinyinStatus.className = `writing-pinyin-feedback ${pinyinFeedback}`;
+      pinyinStatus.textContent = pinyinFeedback === "correct" ? "Pinyin correct !" : `À revoir. Réponse : ${word.pinyin}`;
+      pinyinStatus.hidden = false;
+    };
+  }
   container
     .querySelectorAll<HTMLButtonElement>("[data-writing-character]")
     .forEach(
       (b) =>
         (b.onclick = () => {
           characterIndex = Number(b.dataset.writingCharacter);
+            resetPinyinAttempt();
           draw();
         }),
     );
@@ -161,6 +262,7 @@ function draw() {
     (b) =>
       (b.onclick = () => {
         mode = b.dataset.writingMode as typeof mode;
+          resetPinyinAttempt();
         draw();
       }),
   );
@@ -170,6 +272,7 @@ function draw() {
     const next = available[(current + 1) % available.length];
     wordIndex = next.wordIndex;
     characterIndex = next.characterIndex;
+    resetPinyinAttempt();
     draw();
   };
   void initialize();
