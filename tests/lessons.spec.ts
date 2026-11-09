@@ -6,7 +6,7 @@ import {
 } from "../src/lessons";
 
 test("catalogue de leçons et sélecteurs d'exercices", async ({ page }) => {
-  expect(lessons.map((lesson) => lesson.id)).toEqual(["lesson-1", "lesson-2", "lesson-3"]);
+  expect(lessons.map((lesson) => lesson.id)).toEqual(["lesson-1", "lesson-2", "lesson-3", "lesson-4"]);
   expect(lessons[1].vocabulary.some((word) => word.hanzi === "朋友")).toBe(false);
   expect(lessons[2].vocabulary.some((word) => word.hanzi === "朋友")).toBe(true);
   expect(vocabularyForScope("all")).toEqual(allVocabulary);
@@ -16,6 +16,7 @@ test("catalogue de leçons et sélecteurs d'exercices", async ({ page }) => {
   await expect(page.locator('[data-open-lesson="lesson-1"]')).toBeVisible();
   await expect(page.locator('[data-open-lesson="lesson-2"]')).toBeVisible();
   await expect(page.locator('[data-open-lesson="lesson-3"]')).toBeVisible();
+  await expect(page.locator('[data-open-lesson="lesson-4"]')).toBeVisible();
   await page.locator('[data-open-lesson="lesson-1"]').click();
   for (const label of ["Écriture", "Quiz", "Oral", "Vocabulaire"]) {
     await page.getByRole("button", { name: label, exact: true }).click();
